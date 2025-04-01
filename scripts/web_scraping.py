@@ -100,4 +100,4 @@ while True:
 df = pd.DataFrame(lodging_list)
 
 # simpan dataframe ke dalam folder 'data'
-df.to_csv("../data/penginapan_bukitvista.csv", index=False)
+df.to_csv("data/penginapan_bukitvista.csv", index=False)

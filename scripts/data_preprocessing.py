@@ -5,7 +5,7 @@ import re
 today = datetime.today()
 
 # baca CSV
-df = pd.read_csv("../data/penginapan_bukitvista.csv")
+df = pd.read_csv("data/penginapan_bukitvista.csv")
 date_format = "Updated on %B %d, %Y at %I:%M %p"
 df['property_type'] = df['property_type'].fillna('')
 df['property_status'] = df['property_status'].fillna('')
@@ -79,4 +79,4 @@ for index, row in df.iterrows():
 df.drop(columns=['name', 'property_type', 'property_status', 'date_since', 'last_update', 'lodging_url', 'airbnb_url', 'gmap_url', 'area', 'state', 'zip', 'country', 'city', 'price', 'property_id'], inplace=True)
 
 # simpan hasilnya
-df.to_csv("../data/processed_penginapan_bukitvista.csv", index=False)
+df.to_csv("data/processed_penginapan_bukitvista.csv", index=False)

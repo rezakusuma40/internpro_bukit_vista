@@ -65,10 +65,10 @@ def preprocess_desc(text):
   return re.sub(r"\s+", " ", text.strip())  # hapus spasi berlebih
 
 # baca CSV
-df = pd.read_csv("../data/processed_penginapan_bukitvista.csv")
+df = pd.read_csv("data/processed_penginapan_bukitvista.csv")
 
 # terapkan preprocessing ke kolom description
 df["processed_description"] = df["description"].apply(preprocess_desc)
 
 # simpan hasilnya
-df.to_csv("../data/desc_processed_penginapan_bukitvista.csv", index=False)
+df.to_csv("data/desc_processed_penginapan_bukitvista.csv", index=False)
