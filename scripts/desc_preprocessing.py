@@ -1,15 +1,9 @@
 import pandas as pd
 import re
-import nltk
 from nltk.corpus import stopwords
 from langdetect import detect
 import spacy
 import stanza
-
-nltk.download("punkt")
-nltk.download("punkt_tab")
-nltk.download("stopwords")
-stanza.download("id")
 
 # load model SpaCy untuk bahasa Inggris
 nlp_en = spacy.load("en_core_web_sm")
