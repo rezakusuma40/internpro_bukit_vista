@@ -1,13 +1,10 @@
 from requests_html import HTMLSession
 from bs4 import BeautifulSoup
-# from fake_useragent import UserAgent
 import pandas as pd
 
 def get_details(lodging_list, lodging_url, name, author, date_since):
    print(lodging_url)
-   res = session.get(lodging_url, 
-                     # headers
-                     )
+   res = session.get(lodging_url)
    soup = BeautifulSoup(res.content, 'html.parser')
    lodging_data = {}
    lodging_data['lodging_url'] = lodging_url
@@ -62,7 +59,7 @@ def get_details(lodging_list, lodging_url, name, author, date_since):
       try    : lodging_data['max_guests']      = other_detail.find('strong', string='Guest Number:').find_next_sibling('span').text   
       except : pass
    
-   try    : lodging_data['airbnb_url'] = soup.select_one('a:-soup-contains("Book")')['href']
+   try    : lodging_data['airbnb_url']  = soup.select_one('a:-soup-contains("Book")')['href']
    except : pass
    
    try    : lodging_data['description'] = soup.select_one('.property-description-wrap .block-content-wrap').get_text(' ', True)
@@ -76,12 +73,9 @@ lodging_list = []
 
 page_num = 1
 while True:
-   # headers = {'User-Agent':UserAgent().random}
    url = f'https://www.bukitvista.com/search-results/page/{page_num}'
    print(url)
-   res = session.get(url, 
-                     # headers
-                     )
+   res = session.get(url)
    soup = BeautifulSoup(res.content, 'html.parser')
    lodgings = soup.select('.item-listing-wrap')
    for lodging in lodgings:
