@@ -1,6 +1,7 @@
 import pandas as pd
 from datetime import datetime
 import re
+from forex_python.converter import CurrencyRates
 
 today = datetime.today()
 
@@ -21,11 +22,9 @@ df['bathrooms'] = df['bathrooms'].fillna(0)
 df['garages'] = df['garages'].fillna(0)
 df['max_guests'] = df['max_guests'].fillna(0)
 
-df['months_since'] = pd.NA
-df['update_days_ago'] = pd.NA
-df['is_starting_price'] = pd.NA
-df['currency'] = pd.NA
-df['price_per_night'] = pd.NA
+# df['months_since'] = pd.NA
+# df['update_days_ago'] = pd.NA
+# df['price_per_night_usd'] = pd.NA
 
 for index, row in df.iterrows():
   description = f"{row['name']} {row['property_type']} {row['property_status']} {row['description']}"
@@ -52,9 +51,6 @@ for index, row in df.iterrows():
     df.at[index, 'update_days_ago'] = df.at[index, 'months_since'] * 30
 
   if pd.notna(row['price']):
-    df.at[index, 'is_starting_price'] = bool(re.search(r'start.* from|mulai dari', row['price'], re.IGNORECASE))
-    df.at[index, 'currency'] = 'IDR' if 'Rp' in row['price'] else 'USD'
-
     if re.search(r'night|malam', row['price'], re.IGNORECASE):
       price_period = 1
     elif re.search(r'2 nights|2 malam', row['price'], re.IGNORECASE):
@@ -63,17 +59,20 @@ for index, row in df.iterrows():
     elif re.search(r'month|bulan', row['price'], re.IGNORECASE):
       price_period = 30
 
-    # price_match = re.search(r'(\d+)', row['price'])
     price_match = "".join(filter(str.isdigit, row['price']))
     if price_match:
-      df.at[index, 'price_per_night'] = int(price_match) / price_period
+      price_per_night = int(price_match) / price_period
+      if 'Rp' in row['price']:
+        c = CurrencyRates()
+        # Konversi ke idr to USD
+        price_per_night = c.convert('IDR', 'USD', price_per_night, today)
     else:
-      df.at[index, 'price_per_night'] = pd.NA
+      price_per_night = pd.NA
 
+    df.at[index, 'price_per_night'] = price_per_night
+    
   else:
-    df.at[index, 'is_starting_price'] = True
-    df.at[index, 'currency'] = 'USD'
-    df.at[index, 'price_per_night'] = 1000
+    df.at[index, 'price_per_night'] = 1000 # Extremelu high price for filtering
   
 # hapus kolom
 df.drop(columns=['name', 'property_type', 'property_status', 'date_since', 'last_update', 'lodging_url', 'airbnb_url', 'gmap_url', 'area', 'state', 'zip', 'country', 'city', 'price', 'property_id'], inplace=True)
