@@ -4,6 +4,7 @@ from nltk.corpus import stopwords
 from langdetect import detect
 import spacy
 import stanza
+import string
 
 # load model SpaCy untuk bahasa Inggris
 nlp_en = spacy.load("en_core_web_sm")
@@ -58,11 +59,35 @@ def preprocess_desc(text):
   
   return re.sub(r"\s+", " ", text.strip())  # hapus spasi berlebih
 
+# Fungsi untuk menghapus emoji
+def remove_emoji(text):
+  emoji_pattern = re.compile("["
+    u"\U0001F600-\U0001F64F"  # Emotikon
+    u"\U0001F300-\U0001F5FF"  # Simbol & Piktogram
+    u"\U0001F680-\U0001F6FF"  # Transportasi & Simbol lainnya
+    u"\U0001F700-\U0001F77F"  # Simbol Alkimia
+    u"\U0001F780-\U0001F7FF"  # Simbol Geometris Tambahan
+    u"\U0001F800-\U0001F8FF"  # Simbol Suara & Musik
+    u"\U0001F900-\U0001F9FF"  # Simbol Misc
+    u"\U0001FA00-\U0001FA6F"  # Simbol Game & Olahraga
+    u"\U0001FA70-\U0001FAFF"  # Simbol Barang Rumah Tangga
+    u"\U00002702-\U000027B0"  # Simbol Misc Lainnya
+    u"\U000024C2-\U0001F251"  # Simbol Enclosed
+    "]+", flags=re.UNICODE)
+  return emoji_pattern.sub(r"", text)
+
+# Fungsi untuk menghapus tanda baca
+def remove_punctuation(text):
+  return text.translate(str.maketrans("", "", string.punctuation))
+
 # baca CSV
 df = pd.read_csv("data/processed_penginapan_bukitvista.csv")
 
+# Bersihkan teks
+df["processed_description"] = df["description"].astype(str).apply(lambda x: remove_punctuation(remove_emoji(x)))
+
 # terapkan preprocessing ke kolom description
-df["processed_description"] = df["description"].apply(preprocess_desc)
+df["processed_description"] = df["processed_description"].apply(preprocess_desc)
 
 # simpan hasilnya
 df.to_csv("data/desc_processed_penginapan_bukitvista.csv", index=False)
