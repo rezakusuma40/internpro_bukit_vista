@@ -1,7 +1,13 @@
 import pandas as pd
 from datetime import datetime
 import re
-from forex_python.converter import CurrencyRates
+import json
+from requests_html import HTMLSession
+
+# Load API key from JSON file
+with open("cred.json", "r") as file:
+  config = json.load(file)
+  url = config["EXAMPLE_URL"]
 
 today = datetime.today()
 
@@ -51,28 +57,28 @@ for index, row in df.iterrows():
     df.at[index, 'update_days_ago'] = df.at[index, 'months_since'] * 30
 
   if pd.notna(row['price']):
-    if re.search(r'night|malam', row['price'], re.IGNORECASE):
-      price_period = 1
+    if re.search(r'month|bulan', row['price'], re.IGNORECASE):
+      price_period = 30
     elif re.search(r'2 nights|2 malam', row['price'], re.IGNORECASE):
       price_period = 2
       row['price'] = re.sub(r'2 nights|2 malam', '', row['price'], flags=re.IGNORECASE)
-    elif re.search(r'month|bulan', row['price'], re.IGNORECASE):
-      price_period = 30
+    elif re.search(r'night|malam', row['price'], re.IGNORECASE):
+      price_period = 1
 
     price_match = "".join(filter(str.isdigit, row['price']))
     if price_match:
       price_per_night = int(price_match) / price_period
       if 'Rp' in row['price']:
-        c = CurrencyRates()
-        # Konversi ke idr to USD
-        price_per_night = c.convert('IDR', 'USD', price_per_night, today)
+        response = HTMLSession().get(url).json()
+        idr_to_usd = response["conversion_rates"]["IDR"]
+        price_per_night = price_per_night / idr_to_usd
     else:
       price_per_night = pd.NA
 
     df.at[index, 'price_per_night'] = price_per_night
     
   else:
-    df.at[index, 'price_per_night'] = 1000 # Extremelu high price for filtering
+    df.at[index, 'price_per_night'] = 1000 # Extremely high price for filtering
   
 # hapus kolom
 df.drop(columns=['name', 'property_type', 'property_status', 'date_since', 'last_update', 'lodging_url', 'airbnb_url', 'gmap_url', 'area', 'state', 'zip', 'country', 'city', 'price', 'property_id'], inplace=True)
