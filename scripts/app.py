@@ -1,12 +1,12 @@
 import streamlit as st
-st.set_page_config(page_title="BukitVista Hybrid Search", layout="centered")
-
+st.set_page_config(page_title="BukitVista Hybrid Search", layout="wide")
 from hybrid_query_handler import hybrid_query
 
+
 def format_number(num):
-    if isinstance(num, (int, float)) and num.is_integer():
-        return int(num)  # Return as int if it's a whole number
-    return num  # Otherwise return as is
+  if isinstance(num, (int, float)) and num.is_integer():
+    return int(num)
+  return num
 
 st.markdown("<h1 style='text-align: center;'>🔍 Find a Room in BukitVista!</h1>", unsafe_allow_html=True)
 
@@ -33,7 +33,7 @@ with st.expander("🔧 Search Settings", expanded=True):
   with col5:
     max_guests = st.number_input("👥 Max Guests", min_value=0.0, step=1.0)
 
-  sort_by = st.selectbox("Sort Results By", ["relevancy", "update_days_ago"])
+  sort_by = st.selectbox("Sort Results By", ["relevancy", "latest update", "cheapest", "most expensive"])
 
 # --- when clicked ---
 if st.button("🔍 Search"):
@@ -45,7 +45,6 @@ if st.button("🔍 Search"):
       "max": price_range[1]
     }
 
-  # exact match filters
   if bathrooms > 0:
     filters["bathrooms"] = {"$eq": bathrooms}
   if bedrooms > 0:
@@ -66,44 +65,63 @@ if st.button("🔍 Search"):
   )
 
   relevant_results = [r for r in results if r.get("hybrid_score", 0) >= 0.275]
-  if sort_by == "update_days_ago":
-    relevant_results = sorted(relevant_results, key=lambda x: x["metadata"].get("update_days_ago", 9999))
+
+  if sort_by == "latest update":
+    relevant_results.sort(key=lambda x: x["metadata"].get("update_days_ago", 9999))
+  elif sort_by == "cheapest":
+    relevant_results.sort(key=lambda x: x["metadata"].get("price_per_night", float('inf')))
+  elif sort_by == "most expensive":
+    relevant_results.sort(key=lambda x: x["metadata"].get("price_per_night", -1), reverse=True)
+
   st.subheader(f"Found {len(relevant_results)} Result(s)")
-  for item in relevant_results:
+  # display results in rows of 3 columns
+  cols = st.columns(3)
+  for idx, item in enumerate(relevant_results):
     meta = item["metadata"]
-    # pastikan harga ada
-    try: meta["price_per_night"] = round(meta["price_per_night"], 2)
-    except: meta["price_per_night"] = "N/A"
+    try:
+      meta["price_per_night"] = round(meta["price_per_night"], 2)
+    except:
+      meta["price_per_night"] = "N/A"
 
     # potong deskripsi jika terlalu panjang
     desc = meta.get("all_text", "")
-    words = desc.split('description: ')[1].split()
-    if len(words) > 100:
-      meta["all_text"] = " ".join(words[:100]) + "..."
-    
-    st.markdown(f"### 🏠 {meta.get('name', 'Unnamed')}")
-    st.markdown(f"**Address:** {meta.get('address_original', '-')}")
-    st.markdown(meta.get('all_text', ''))
-    st.markdown(
-      f"**🛁Bathrooms:** {format_number(meta.get('bathrooms', '-'))} &nbsp;&nbsp; "
-      f"**🛏Bedrooms:** {format_number(meta.get('bedrooms', '-'))} &nbsp;&nbsp; "
-      f"**🚪Rooms:** {format_number(meta.get('rooms', '-'))} &nbsp;&nbsp; "
-      f"**🚗Garages:** {format_number(meta.get('garages', '-'))} &nbsp;&nbsp; "
-      f"**👥Maximum Guests:** {format_number(meta.get('max_guests', '-'))} &nbsp;&nbsp; "
-    )
-    st.markdown(
-      f"**💰Price per night:** ${meta.get('price_per_night', '-')}"
-    )
-    st.markdown(f"**🕒 Last Update:** {meta.get('update_days_ago', '-')} days ago")
+    try:
+      words = desc.split('description: ')[1].split()
+      tooltip_desc = " ".join(words[:100]) + "..." if len(words) > 100 else " ".join(words)
+    except:
+      tooltip_desc = ""
 
-    if meta.get("lodging_url"):
-      st.markdown(f"[🌐 BukitVista]({meta['lodging_url']})", unsafe_allow_html=True)
-    if meta.get("airbnb_url"):
-      st.markdown(f"[🏡 Airbnb]({meta['airbnb_url']})", unsafe_allow_html=True)
-    if meta.get("gmap_url"):
-      st.markdown(f"[🗺 Google Maps]({meta['gmap_url']})", unsafe_allow_html=True)
+    with cols[idx % 3]:
+      st.markdown(f"#### 🏠 {meta.get('name', 'Unnamed')}")
+      
+      # gambar dengan tooltip saat hover
+      if meta.get("picture_url"):
+        st.markdown(
+          f"<div title='{tooltip_desc}' style='text-align:center;'>"
+          f"<img src='{meta['picture_url']}' alt='Room Image' style='width:100%; border-radius:8px;'/>"
+          f"</div>",
+          unsafe_allow_html=True
+        )
+      
+      st.markdown(f"**📍 {meta.get('address_original', '-')}**")
+      st.markdown(
+        f"{format_number(meta.get('bathrooms', '-'))} 🛁 &nbsp;&nbsp; "
+        f"{format_number(meta.get('bedrooms', '-'))} 🛏 &nbsp;&nbsp; "
+        f"{format_number(meta.get('rooms', '-'))} 🚪 &nbsp;&nbsp; "
+        f"{format_number(meta.get('garages', '-'))} 🚗 &nbsp;&nbsp; "
+        f"{format_number(meta.get('max_guests', '-'))} 👥"
+      )
+      st.markdown(f"💰 **${meta.get('price_per_night', '-')}/night**")
+      st.markdown(f"🕒 {meta.get('update_days_ago', '-')} days ago")
 
-    if "hybrid_score" in item:
-      st.markdown(f"**📊 Relevancy Score:** {item['hybrid_score']:.4f}")
+      links = []
+      if meta.get("lodging_url"):
+        links.append(f"[🌐 BukitVista]({meta['lodging_url']})")
+      if meta.get("airbnb_url"):
+        links.append(f"[🏡 Airbnb]({meta['airbnb_url']})")
+      if meta.get("gmap_url"):
+        links.append(f"[🗺 Maps]({meta['gmap_url']})")
+      st.markdown(" | ".join(links), unsafe_allow_html=True)
 
-    st.markdown("---")
+      if "hybrid_score" in item:
+        st.markdown(f"📊 Score: {item['hybrid_score']:.3f}")

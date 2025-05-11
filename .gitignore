@@ -1,4 +1,3 @@
-cred.json
 venv/
 *.pyc
 __pycache__/
