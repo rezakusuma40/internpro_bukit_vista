@@ -103,13 +103,13 @@ if st.button("🔍 Search"):
           unsafe_allow_html=True
         )
       
-      st.markdown(f"**📍 {meta.get('address_original', '-')}**")
+      st.markdown(f"**📍 {meta.get('address_original', 'unknown location')}**")
       st.markdown(
-        f"{format_number(meta.get('bathrooms', '-'))} 🛁 &nbsp;&nbsp; "
-        f"{format_number(meta.get('bedrooms', '-'))} 🛏 &nbsp;&nbsp; "
-        f"{format_number(meta.get('rooms', '-'))} 🚪 &nbsp;&nbsp; "
-        f"{format_number(meta.get('garages', '-'))} 🚗 &nbsp;&nbsp; "
-        f"{format_number(meta.get('max_guests', '-'))} 👥"
+        f"{format_number(meta.get('bathrooms', '?'))} 🛁 &nbsp;&nbsp; "
+        f"{format_number(meta.get('bedrooms', '?'))} 🛏 &nbsp;&nbsp; "
+        f"{format_number(meta.get('rooms', '?'))} 🚪 &nbsp;&nbsp; "
+        f"{format_number(meta.get('garages', '?'))} 🚗 &nbsp;&nbsp; "
+        f"{format_number(meta.get('max_guests', '?'))} 👥"
       )
       st.markdown(f"💰 **${meta.get('price_per_night', '-')}/night**")
       st.markdown(f"🕒 {meta.get('update_days_ago', '-')} days ago")
