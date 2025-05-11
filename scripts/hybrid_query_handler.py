@@ -10,9 +10,10 @@ import numpy as np
 from langdetect import detect
 
 # --- config & model init ---
-with open("cred.json", "r") as file:
-  config = json.load(file)
-  pinecone_api_key = config['PINECONE_API_KEY']
+# with open("cred.json", "r") as file:
+#   config = json.load(file)
+config = st.secrets
+pinecone_api_key = config['PINECONE_API_KEY']
 
 pc = Pinecone(api_key=pinecone_api_key)
 index = pc.Index("penginapan-bukitvista")
