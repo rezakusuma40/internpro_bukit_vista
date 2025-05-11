@@ -1,6 +1,14 @@
-if you can't run it on streamlit due to "OSError: [E050] Can't find model 'en_core_web_sm'. It doesn't seem to be a Python package or a valid path to a data directory." error, try to add this to requirements.txt: change 3.8.0 to your version if needed
-https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
+🎯 Project Goal  
+This internship project explores what can be built using BukitVista’s existing data.  
+I use only properties publicly available on the [BukitVista website](https://www.bukitvista.com/search-results) as training data.
 
-cred.json contains all necessary credentials for the app to run.  
-I don't push cred.json to github cause it's secret.
-If you want to run it yourself, you must provide your own credentials
+Due to the limited dataset, the search results may not always be accurate — and improving them without external data is challenging.
+That said, this project serves as a solid proof of concept, and with further development, it could become a useful tool for travelers searching for vacation rentals.
+
+🌐 Try the Live Demo  
+[👉 Click here to visit the live app on Streamlit](https://internprobukitvista-cktmnjlddw5p3zmypww2pn.streamlit.app/)
+
+🔐 About cred.json  
+This app requires cred.json to run properly, as it contains all necessary credentials.  
+Note: I didn't push cred.json to GitHub because it contains sensitive information.  
+If you'd like to run this project as your own project, you'll need to provide your own credentials.
