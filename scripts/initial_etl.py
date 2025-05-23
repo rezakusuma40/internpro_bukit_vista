@@ -106,7 +106,7 @@ def clean_all_text(text):
    return text
 
 def lemmatize(text):
-   text = re.sub(r"[^a-zA-Z0-9\s]", " ", text)
+   text = re.sub(r"[^a-zA-Z0-9\s]", " ", text) # hapus tanda baca
    text = re.sub(r"\s+", " ", text.strip()) # hapus spasi berlebih lagi
    doc  = nlp_en(text) # inisialisasi lemmatizer
    text = " ".join([word.lemma_ for word in doc if word.text not in stop_words])  # lemmatization bahasa Inggris
